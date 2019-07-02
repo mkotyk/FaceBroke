@@ -57,7 +57,6 @@ public class PostManager extends HttpServlet {
 	@Override
 	@SuppressWarnings("unchecked")
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		
 		if(!ValidationSnipets.isValidSession(req.getSession())){
 			res.sendRedirect("index");
 			return;
@@ -72,7 +71,6 @@ public class PostManager extends HttpServlet {
 		}
 		
 		RequestDispatcher reqDis;
-		
 		
 		int pageStart, postsPerPage;
 		long user_id;
@@ -163,15 +161,14 @@ public class PostManager extends HttpServlet {
 			return;
 		}
 		
-		
 		Session sess = HibernateUtility.getSessionFactory().openSession();
 		
-		
-		String wall_id_string = req.getParameter("user_id");
-		String creator_id_string = req.getParameter("creator_id");
-		String type_string = req.getParameter("type");
-		String content = Encode.forHtml(req.getParameter("content"));
-		String on_wall = req.getParameter("on_wall");
+		// Get all the parameters
+		String wall_id_string       = req.getParameter("user_id");
+		String creator_id_string    = req.getParameter("creator_id");
+		String type_string          = req.getParameter("type");
+		String content              = Encode.forHtml(req.getParameter("content"));
+		String on_wall              = req.getParameter("on_wall");
 		
 		log.info("Received POST for a new post");
 		log.info("Wall ID: {}",ValidationSnipets.sanitizeCRLF(wall_id_string));
@@ -187,8 +184,7 @@ public class PostManager extends HttpServlet {
 			// Validate Wall ID
 			long wall_id = Long.parseLong(wall_id_string);
 			
-			List<Wall> walls = sess.createQuery("FROM Wall w WHERE w.id = :wall_id")
-							 .setParameter("wall_id", wall_id)
+			List<Wall> walls = sess.createQuery("FROM Wall w WHERE w.id = " + wall_id_string) // Why convert it to an int and then a string again.
 							 .list();
 			
 			if(walls.isEmpty()) {
@@ -202,8 +198,7 @@ public class PostManager extends HttpServlet {
 			// Validate User ID
 			long user_id = Long.parseLong(creator_id_string);
 			
-			List<User> users = sess.createQuery("FROM User u WHERE u.id = :user_id")
-					 						.setParameter("user_id", user_id)
+			List<User> users = sess.createQuery("FROM User u WHERE u.id = " + creator_id_string)
 					 						.list();
 			
 			if (users.isEmpty()) {
@@ -288,7 +283,7 @@ public class PostManager extends HttpServlet {
 		
 		try {
 			
-			long post_id = Long.parseLong(req.getParameter("post_id"));
+			String post_id = req.getParameter("post_id");
 			long user_id = (long)req.getSession().getAttribute("user_id");
 			
 			// Get the current User
@@ -303,8 +298,7 @@ public class PostManager extends HttpServlet {
 			User u  = users.get(0);
 			
 			// Get the target Post
-			List<Post> posts = sess.createQuery("FROM Post p WHERE p.id = :post_id")
-					.setParameter("post_id", post_id)
+			List<Post> posts = sess.createQuery("FROM Post p WHERE p.id = " + post_id)
 					.list();
 
 			if (posts.isEmpty()) {
